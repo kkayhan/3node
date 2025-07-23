@@ -1,0 +1,40 @@
+name: 2node
+prefix: ""
+
+topology:
+  nodes:
+######### SRL1 Node Definition #########
+    srl1:
+      kind: nokia_srlinux
+      image: ghcr.io/nokia/srlinux:25.3.2
+      startup-config: ./startup_configs/node1.cfg
+
+######### SRL2 Node Definition #########
+    srl2:
+      kind: nokia_srlinux
+      image: ghcr.io/nokia/srlinux:25.3.2
+      startup-config: ./startup_configs/node2.cfg
+
+######### FW 1 Definition #########
+    fw1:
+      kind: linux
+      image: ghcr.io/srl-labs/network-multitool
+      exec:
+        - sudo ip link set eth0 down
+        - sudo ip link set eth1 up
+        - sudo ip addr add 10.10.10.1/24 dev eth1
+
+######### FW 2 Definition #########
+    fw2:
+      kind: linux
+      image: ghcr.io/srl-labs/network-multitool
+      exec:
+        - sudo ip link set eth0 down
+        - sudo ip link set eth1 up
+        - sudo ip addr add 10.10.10.2/24 dev eth1
+      
+  links:
+    - endpoints: [ srl1:e1-1, srl2:e1-1 ]
+    - endpoints: [ fw1:eth1, srl1:e1-2 ]
+    - endpoints: [ fw2:eth1, srl2:e1-2 ]
+

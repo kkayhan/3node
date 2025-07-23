@@ -1,0 +1,64 @@
+name: 3node
+prefix: ""
+
+topology:
+  nodes:
+######### bl1 Node Definition #########
+    bl1:
+      kind: nokia_srlinux
+      image: ghcr.io/nokia/srlinux:25.3.2
+      startup-config: ./startup_configs/bl1.cfg
+
+######### bl2 Node Definition #########
+    bl2:
+      kind: nokia_srlinux
+      image: ghcr.io/nokia/srlinux:25.3.2
+      startup-config: ./startup_configs/bl2.cfg
+
+######### leaf Node Definition #########
+    leaf:
+      kind: nokia_srlinux
+      image: ghcr.io/nokia/srlinux:25.3.2
+      startup-config: ./startup_configs/leaf.cfg
+
+######### spine Node Definition #########
+    spine:
+      kind: nokia_srlinux
+      image: ghcr.io/nokia/srlinux:25.3.2
+      startup-config: ./startup_configs/spine.cfg
+
+######### FW 1 Definition #########
+    fw1:
+      kind: linux
+      image: ghcr.io/srl-labs/network-multitool
+      exec:
+        - sudo ip link set eth0 down
+        - sudo ip link set eth1 up
+        - sudo ip addr add 10.10.10.1/24 dev eth1
+
+######### FW 2 Definition #########
+    fw2:
+      kind: linux
+      image: ghcr.io/srl-labs/network-multitool
+      exec:
+        - sudo ip link set eth0 down
+        - sudo ip link set eth1 up
+        - sudo ip addr add 10.10.10.1/24 dev eth1
+
+    client:
+      kind: linux
+      image: ghcr.io/srl-labs/network-multitool
+      exec:
+        - sudo ip link set eth0 down
+        - sudo ip link set eth1 up
+        - sudo ip addr add 10.10.10.2/24 dev eth1
+      
+  links:
+    - endpoints: [ bl1:e1-1, spine:e1-1 ]
+    - endpoints: [ bl2:e1-1, spine:e1-2 ]
+    - endpoints: [ leaf:e1-1, spine:e1-3 ]
+
+    - endpoints: [ fw1:eth1, bl1:e1-2 ]
+    - endpoints: [ fw2:eth1, bl2:e1-2 ]
+    - endpoints: [ client:eth1, leaf:e1-2 ]
+
